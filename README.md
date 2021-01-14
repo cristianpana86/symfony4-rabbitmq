@@ -3,11 +3,7 @@ See file 'Symfony-RabbitMQ project.docx' for readme info with images.
 
 **Project request**
 
-You will need to write a program that downloads all the items in https://mgtechtest.blob.core.windows.net/files/showcase.json  and cache images within each asset. To make it efficient, it is desired to only call the URLs in the JSON file only once. Demonstrate, by using a framework of your choice, your software architectural skills. How you use the framework will be highly important in the evaluation. 
-
-How you display the feed and how many layers/pages you use is up to you, but please ensure that we can see the complete list and the details of every item. You will likely hit some road blocks and errors along the way, please use your own initiative to deal with these issues, it’s part of the test.
-
-Please ensure all code is tested before sending it back, it would be good to also see unit tests too. Ideally, alongside supplying the code base and all packages/libraries required to deploy, you will also have to supply deployment instructions too.
+You will need to write a program that downloads all the items from a given JSON (found at url ...) and cache images within each asset. To make it efficient, it is desired to only call the URLs in the JSON file only once. Demonstrate, by using a framework of your choice, your software architectural skills. How you use the framework will be highly important in the evaluation. 
  
  **Overview**
  
@@ -52,8 +48,8 @@ Please ensure all code is tested before sending it back, it would be good to als
  
  Access in your browser  `http://localhost:8005/`
  Press Import data button in order to:
- 1.  Synchronously read the JSON found  at https://mgtechtest.blob.core.windows.net/files/showcase.json
- and insert data into two database tables:  record and image resulting 45 records and 450 images(cardImage and keyArtImage). After saving to DB each image a message is sent to RabbitMQ “messeges” queue. You can access RabbitMQ instance in your browser at http://localhost:15672 with user guest and password guest
+ 1.  Synchronously read the JSON found  at given URL and insert data into two database tables:  record and image resulting 45 records and 450 images(cardImage and keyArtImage). After saving to DB each image a message is sent to RabbitMQ “messeges” queue. 
+You can access RabbitMQ instance in your browser at http://localhost:15672 with user guest and password guest
  
  2.  By using a log table (caching_log) and AJAX requests the interface will be updated with the progress regarding caching each image:
  Each time the consumer finishes processing an image the info in image table is updated and also a new row is inserted in caching_log table in order to keep track of the progress.
