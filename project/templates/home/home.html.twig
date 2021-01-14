@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        <div class="jumbotron mt-3">
+            <h1>Welcome</h1>
+            <p class="lead">Press button to start processing data.</p>
+            <a id="import_data_button" class="btn btn-lg btn-primary" href="" role="button">Import data</a>
+            <a id="view_data_button" class="btn btn-lg btn-primary invisible" href="{{ path("record_index",{}) }}" role="button">View data</a>
+        </div>
+    </div>
+    <div id="overall_status" class="container" style="display:none">
+        <div class="jumbotron mt-3">
+            <h3>Overall status</h3>
+            <ul class="list-group">
+                <li class="list-group-item">Movies: <span id="records_counter" class="badge badge-primary badge-pill">0</span></li>
+                <li class="list-group-item">Images to be cached: <span id="images_counter" class="badge badge-primary badge-pill">0</span></li>
+                <li class="list-group-item">Processed images till now: <span id="processed_images_counter" class="badge badge-primary badge-pill">0</span>
+                    <div id="spinner_processed_images" class="spinner-border"></div>
+                </li>
+            </ul>
+        </div>
+        <div class="jumbotron mt-3">
+            <h2>Files processed</h2>
+            <p>Each image is sent to a RabbitMQ jobs queue from where it is picked an processed by consumers.</p>
+            <table id="caching_log_table" class="table table-dark">
+                <thead>
+                <tr>
+                    <th class="col-xs-1">Image ID</th>
+                    <th class="col-xs-1">URL</th>
+                    <th class="col-xs-2">Local path</th>
+                    <th class="col-xs-1">Consumer</th>
+                    <th class="col-xs-2">Error</th>
+                </tr>
+                </thead>
+                <tbody id="caching_log_table_body">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+
+        $(document).ready(function() {
+
+            // Display status and list of processed files if at least one file is processed
+            {% if total_rows_processed > 0 %}
+                $("#view_data_button").removeClass('invisible');
+                // Display stats and start updating status
+                $('#overall_status').show();
+                $('#records_counter').text({{ records_counter }});
+                $('#images_counter').text({{ images_counter }});
+                window.totalImages = {{ images_counter }};
+                window.lastRow = 0;
+                window.totalRowsProcessed = 0;
+                //Query backend after each X seconds to update displayed list of processed files
+                // Keep track of last row displayed and get only newer rows after last displayed
+                window.intervalUpdateCacheTable = window.setInterval(function () {
+                    updateCachingLogTable(window.lastRow);
+                }, 2000);
+            {% endif %}
+
+            var myClickFunction = function (event) {
+                event.preventDefault();
+                $('.modal').modal('show');
+                $.post("{{ path('import_data', {}) }}", function (data) {
+                    $('.modal').modal('hide');
+                    if (data.status === 0) {
+                        alert(data.error);
+                    }
+                    if (data.status === 1) {
+                        // Reset table
+                        $("#caching_log_table_body").html('');
+                        // Display stats and start updating status
+                        $('#overall_status').show();
+                        $('#records_counter').text(data.data.records_counter);
+                        $('#images_counter').text(data.data.images_counter);
+                        window.totalImages = data.data.images_counter;
+                        window.lastRow = 0;
+                        window.totalRowsProcessed = 0;
+                        //Query backend after each X seconds to update displayed list of processed files
+                        // Keep track of last row displayed and get only newer rows after last displayed
+                        window.intervalUpdateCacheTable = window.setInterval(function () {
+                            updateCachingLogTable(window.lastRow);
+                        }, 2000);
+
+                    }
+
+                }).fail(function () {
+                    alert("AJAX request failed.");
+                    $('.modal').modal('hide');
+                });
+            }
+
+            // Send POST request to initiate importing data
+            $('#import_data_button').click(myClickFunction);
+        })
+
+
+
+        /**
+         * Progressively display list of cached images as they are processed
+         */
+        function updateCachingLogTable() {
+            var myData = {lastRow: window.lastRow };
+            $.ajax({
+                method: "POST",
+                url: "{{ path('update_caching_log_table', {}) }}",
+                data: JSON.stringify(myData),
+                dataType: "JSON"
+            }).done(function( data ) {
+                // If there is at least one record processed, show View data button
+                if(window.totalRowsProcessed > 0) {
+                    $('#spinner_processed_images').show();
+                }
+                if(data.status === 0) {
+                    alert(data.error);
+                }
+                if(data.status === 1) {
+                    // Update last row with new value
+                    window.lastRow = data.data.last_row;
+                    window.totalRowsProcessed = data.data.total_rows_processed;
+                    $('#processed_images_counter').text(window.totalRowsProcessed);
+                    // Stop sending AJAX request if the number of processed files is equal with total number of images
+                    // Also display View data button
+                    if(window.totalImages === window.totalRowsProcessed) {
+                        clearInterval(window.intervalUpdateCacheTable);
+                        $("#view_data_button").removeClass('invisible');
+                        $('#spinner_processed_images').hide();
+                    }
+
+                    data.data.rows.forEach(function (currentRow) {
+                        $('#caching_log_table_body').append(
+                        '<tr>' +
+                            '<td class="col-xs-1">'+ currentRow.id+'</td>'+
+                            '<td class="col-xs-1" style="word-wrap: break-word;min-width: 160px;max-width: 200px;white-space: normal;">'+ currentRow.url + '</td>' +
+                            '<td class="col-xs-1">'+ currentRow.url_cache+'</td>'+
+                            '<td class="col-xs-1">'+ currentRow.consumer_info+'</td>'+
+                            '<td class="col-xs-1" style="word-wrap: break-word;min-width: 160px;max-width: 160px;white-space: normal;">'+ currentRow.comment+'</td>'+
+                        '</tr>'
+                        );
+                    });
+
+                }
+            }).fail(function( data) {
+                console.log('Failed AJAX request');
+                console.log(data);
+                clearInterval(window.intervalUpdateCacheTable);
+            });
+        }
+    </script>
+{% endblock %}

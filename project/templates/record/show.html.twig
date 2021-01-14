@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Record{% endblock %}
+
+{% block body %}
+    {#<h1>Record</h1>#}
+
+    <a href="{{ path('record_index') }}" type="button" class="btn btn-info">Back to list</a>
+    </br> </br>
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ record.id }}</td>
+            </tr>
+
+            <tr>
+                <th>Headline</th>
+                <td>{{ record.headline }}</td>
+            </tr>
+            <tr>
+                <th>External_id</th>
+                <td>{{ record.externalId }}</td>
+            </tr>
+
+            <tr>
+                <th>cardImages</th>
+                <td>
+                    <ul class="list-unstyled">
+                        {% set cardImages = record.getCardImages() %}
+                        {% if cardImages is defined and cardImages is not null %}
+                            {% for img in cardImages %}
+                                <li>
+                                    {%  if img.getUrlCache() is empty %}
+                                        <div class="alert alert-danger" role="alert">
+                                            {{ img.comment }}
+                                        </div>
+                                    {% else %}
+                                        <img src="{{ img.getUrlCache() }}" alt="Image not found" width="{{ img.width }}" height="{{ img.height }}">
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <th>Body</th>
+                <td>{{ record.body }}</td>
+            </tr>
+            <tr>
+                <th>Cast</th>
+                <td>{{ record.cast ? record.cast|json_encode : '' }}</td>
+            </tr>
+            <tr>
+                <th>Cert</th>
+                <td>{{ record.cert }}</td>
+            </tr>
+            <tr>
+                <th>Directors</th>
+                <td>{{ record.directors ? record.directors|json_encode : '' }}</td>
+            </tr>
+            <tr>
+                <th>Duration</th>
+                <td>{{ record.duration }}</td>
+            </tr>
+            <tr>
+                <th>Genres</th>
+                <td>{{ record.genres ? record.genres|join(', ') : '' }}</td>
+            </tr>
+
+            <tr>
+                <th>keyArtImages</th>
+                <td>
+                    <ul class="list-unstyled">
+                        {% set keyArtImages = record.keyArtImages() %}
+                        {% if keyArtImages is defined and keyArtImages is not null %}
+                            {% for img in keyArtImages %}
+                                <li>
+                                    {%  if img.getUrlCache() is empty %}
+                                        <div class="alert alert-danger" role="alert">
+                                            {{ img.comment }}
+                                        </div>
+                                    {% else %}
+                                        <img src="{{ img.getUrlCache() }}" alt="Image not found" width="{{ img.width }}" height="{{ img.height }}">
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                </td>
+            </tr>
+
+            <tr>
+                <th>LastUpdated</th>
+                <td>{{ record.lastUpdated ? record.lastUpdated|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Quote</th>
+                <td>{{ record.quote }}</td>
+            </tr>
+            <tr>
+                <th>Rating</th>
+                <td>{{ record.rating }}</td>
+            </tr>
+            <tr>
+                <th>ReviewAuthor</th>
+                <td>{{ record.reviewAuthor }}</td>
+            </tr>
+            <tr>
+                <th>SkyGoId</th>
+                <td>{{ record.skyGoId }}</td>
+            </tr>
+            <tr>
+                <th>SkyGoUrl</th>
+                <td>{{ record.skyGoUrl }}</td>
+            </tr>
+            <tr>
+                <th>Sum</th>
+                <td>{{ record.sum }}</td>
+            </tr>
+            <tr>
+                <th>Synopsis</th>
+                <td>{{ record.synopsis }}</td>
+            </tr>
+            <tr>
+                <th>Url</th>
+                <td>{{ record.url }}</td>
+            </tr>
+            {#<tr>#}
+                {#<th>ViewingWindowStartDate</th>#}
+                {#<td>{{ record.viewingWindowStartDate ? record.viewingWindowStartDate|date('Y-m-d') : '' }}</td>#}
+            {#</tr>#}
+            {#<tr>#}
+                {#<th>ViewingWindowWayToWatch</th>#}
+                {#<td>{{ record.viewingWindowWayToWatch }}</td>#}
+            {#</tr>#}
+            {#<tr>#}
+                {#<th>ViewingWindowEndDate</th>#}
+                {#<td>{{ record.viewingWindowEndDate ? record.viewingWindowEndDate|date('Y-m-d') : '' }}</td>#}
+            {#</tr>#}
+            <tr>
+                <th>Year</th>
+                <td>{{ record.year }}</td>
+            </tr>
+            <tr>
+                <th>Created</th>
+                <td>{{ record.created ? record.created|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Updated</th>
+                <td>{{ record.updated ? record.updated|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('record_index') }}" type="button" class="btn btn-info">Back to list</a>
+
+{% endblock %}

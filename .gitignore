@@ -1,0 +1,5 @@
+.idea/
+/project/public/bundles/
+/project/public/cache/
+/project/var/
+/project/vendor/
